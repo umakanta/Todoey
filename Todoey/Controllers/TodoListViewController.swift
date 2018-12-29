@@ -17,6 +17,12 @@ class TodoListViewController: UITableViewController {
     let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("Item.plist")
     let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
 
+    var selectedCategory: Category? {
+        didSet {
+    
+            loadItems()
+        }
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -25,7 +31,6 @@ class TodoListViewController: UITableViewController {
         
         print(dataFilePath!)
 
-        loadItems()
     }
 
 
@@ -39,7 +44,6 @@ class TodoListViewController: UITableViewController {
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        print("cellForRowAt")
         
         let cell = tableView.dequeueReusableCell(withIdentifier: "TodoItemCell", for: indexPath)
         
@@ -75,6 +79,7 @@ class TodoListViewController: UITableViewController {
             let newItem = Item(context: self.context)
             newItem.title = (textField.text?.isEmpty)! ? "New Item" : textField.text!
             newItem.done = false
+            newItem.parentCategory = self.selectedCategory
             self.itemArray.append(newItem)
             
             self.saveItems()
@@ -103,6 +108,15 @@ class TodoListViewController: UITableViewController {
     }
     
     func loadItems(with request: NSFetchRequest<Item> =  Item.fetchRequest()) {
+        
+        let categoryPredicate = NSPredicate(format: "parentCategory.name MATCHES %@", selectedCategory!.name!)
+        if let defaultPredicate = request.predicate {
+            request.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [categoryPredicate, defaultPredicate])
+        }
+        else {
+            request.predicate = categoryPredicate
+        }
+        
         
         do {
             itemArray =  try context.fetch(request)

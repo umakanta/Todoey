@@ -15,10 +15,14 @@ DerivedData/
 !default.mode2v3
 *.perspectivev3
 !default.perspectivev3
+
+## User settings
 xcuserdata/
 
 ## Other
 *.moved-aside
+
+## compatibility with Xcode 8 and earlier (ignoring not required starting Xcode 9)
 *.xccheckout
 *.xcscmblueprint
 

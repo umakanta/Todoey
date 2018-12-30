@@ -9,7 +9,7 @@
 import UIKit
 import RealmSwift
 
-class TodoListViewController: UITableViewController {
+class TodoListViewController: SwipeTableViewController {
 
     @IBOutlet weak var searchBar: UISearchBar!
     
@@ -46,7 +46,7 @@ class TodoListViewController: UITableViewController {
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
-        let cell = tableView.dequeueReusableCell(withIdentifier: "TodoItemCell", for: indexPath)
+        let cell = super.tableView(tableView, cellForRowAt: indexPath)
         
         if let item = todoItems?[indexPath.row] {
             cell.textLabel?.text = item.title
@@ -80,28 +80,6 @@ class TodoListViewController: UITableViewController {
         tableView.deselectRow(at: indexPath, animated: true)
     }
     
-    override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
-        return true
-    }
-    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
-        if editingStyle == .delete {
-            
-            if let item = todoItems?[indexPath.row] {
-                do {
-                    try realm.write {
-                        realm.delete(item)
-                    }
-                }
-                catch {
-                     print("Error in Deleting Item \(error)")
-                }
-            }
-            
-        }
-        
-        tableView.reloadData()
-    }
-    
     //MARK: Add Action Method
     @IBAction func addButtonPressed(_ sender: UIBarButtonItem) {
         
@@ -125,7 +103,6 @@ class TodoListViewController: UITableViewController {
             
             self.tableView.reloadData()
         }
-        
         
         alert.addTextField { (alertTextField) in
             alertTextField.placeholder = "Create new Item"
@@ -154,6 +131,20 @@ class TodoListViewController: UITableViewController {
         
        todoItems = selectedCategory?.items.sorted(byKeyPath: "title", ascending: true)
         self.tableView.reloadData()
+    }
+    
+    //MARK: - Delete Cell
+    override func updateModel(at indexPath: IndexPath) {
+        if let item = todoItems?[indexPath.row] {
+            do {
+                try realm.write {
+                    realm.delete(item)
+                }
+            }
+            catch {
+                print("Error in Deleting Item \(error)")
+            }
+        }
     }
 }
 
